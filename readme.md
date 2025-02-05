@@ -4,44 +4,81 @@
 
 ## Prepare environment
 
-Create a postgres container
+Create a Porstgres and Adminer containers
+
+### Postgres container
 
 ```bash
-docker run --name my-postgres \
-  -e POSTGRES_USER=root \
-  -e POSTGRES_PASSWORD=root \
-  -e POSTGRES_DB=postgres-db \
-  -p 5432:5432 \
-  -d postgres
+docker run --name my-postgres \ # name the container
+  -e POSTGRES_USER=root \ # set the user
+  -e POSTGRES_PASSWORD=root \ # set the password
+  -e POSTGRES_DB=postgres \ # set the database
+  -p 5432:5432 \ # map ports like : `host:container`
+  -d postgres # get docker image
 ```
 
 Access the container and to Postgres
 
 ```bash
-docker exec -it my-postgres bash
-psql -U root -d postgres-db
-```
-
-Create a adminer container
-
-```bash
-docker run -d --name adminer -p 8080:8080 adminer
-```
-
-Access the adminer in the browser
-
-```url
-http://localhost:8080/?pgsql=host.docker.internal%3A5432&username=root&db=postgres-db&ns=public
+docker exec -it my-postgres psql -U root -d postgres
 ```
 
 Connexion information
 
 ```text
 System: PostgreSQL
-Server: host.docker.internal:5432
+Server: 
+  - localhost:5432 # from the host
+  - host.docker.internal:5432 # from another container
 Username: root
 Password: root
-Database: postgres-db
+Database: postgres
+```
+
+### Adminer container
+
+```bash
+docker run --name my-adminer \
+  -p 8085:8080 \
+  -d adminer
+```
+
+Access the adminer in the browser
+
+```url
+http://localhost:8085/?pgsql=host.docker.internal%3A5432&username=root&db=postgres&ns=public
+```
+
+<!-- ### PGAdmin container
+
+```bash
+docker run --name my-pgadmin \
+  -e PGADMIN_DEFAULT_EMAIL=root@example.com \
+  -e PGADMIN_DEFAULT_PASSWORD=root \
+  -p 8085:80 \
+  -d dpage/pgadmin4
+```
+
+Open pgAdmin in your browser
+
+```bash
+http://localhost:8085
+``` -->
+
+## Stop environment
+
+Stop the containers
+
+```bash
+docker stop my-postgres my-adminer
+```
+
+## Start environment
+
+Start the containers
+
+```bash
+docker start my-postgres my-adminer
 ```
 
 ## Clean environment
@@ -49,6 +86,6 @@ Database: postgres-db
 Stop and remove the containers
 
 ```bash
-docker stop my-postgres adminer
-docker rm my-postgres adminer
+docker stop my-postgres my-adminer
+docker rm my-postgres my-adminer
 ```
