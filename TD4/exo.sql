@@ -29,71 +29,44 @@ GROUP BY GROUPING SETS ( (etudiant), (intervenant), (matiere) );
 -- Exo 2
 -- Dans quelle(s) salle(s) (déterminée par nos et contenance) s’est / se sont déroulée(s) le plus de séances de cours ?
 
--- SELECT s.nos, s.contenance, COUNT(*) as nb_seances
--- FROM Salle s
--- JOIN Cours c ON s.nos = c.nos
--- GROUP BY s.nos, s.contenance
--- HAVING COUNT(*) = (
---     SELECT COUNT(*)
---     FROM Cours
---     GROUP BY nos
---     ORDER BY COUNT(*) DESC
---     LIMIT 1
--- );
+-- Solution
+WITH table_provisoire AS (
+    SELECT s.nos, s.contenance, COUNT(c.nos) AS nb_cours
+    FROM Salle s
+    JOIN Cours c ON s.nos = c.nos
+    GROUP BY s.nos, s.contenance
+)
+SELECT nos, contenance, nb_cours
+FROM table_provisoire
+WHERE nb_cours = (SELECT MAX(nb_cours) FROM table_provisoire);
 
 -- Exo 3
 -- Donnez le classement des cinq meilleurs étudiants de la promo en affichant également leurs noms et moyennes obtenues.
 
-SELECT e.nom, e.prenom, AVG(ev.note) as moyenne
-FROM Etudiant e
-JOIN Evaluation ev ON e.ide = ev.ide
-GROUP BY e.ide, e.nom, e.prenom
-ORDER BY moyenne DESC
-LIMIT 5;
+WITH moyenne_etudiant AS (
+    SELECT
+        et.nom AS nom,
+        et.prenom AS prenom,
+        ROUND(AVG(ev.note), 2) AS moyenne,
+        RANK() OVER (ORDER BY ROUND(AVG(ev.note), 2) DESC) AS classement
+    FROM Etudiant et
+    JOIN Evaluation ev ON et.ide = ev.ide
+    GROUP BY et.nom, et.prenom
+)
+SELECT classement, nom, prenom, moyenne
+FROM moyenne_etudiant
+WHERE classement <= 5;
 
 -- Exo 4
 -- Quels sont les noms et statuts des intervenants qui ont assuré toutes les séances recensées de cours de chaque matière ?
 
-SELECT DISTINCT i.nom, i.statut
-FROM Intervenant i
-JOIN Cours c ON i.idi = c.idi
-GROUP BY i.idi, i.nom, i.statut
-HAVING COUNT(DISTINCT c.idm) = (SELECT COUNT(*) FROM Matiere);
+
 
 -- Exo 5
 -- Pour chaque salle de contenance supérieure ou égale à 20, indiquez le nombre de cours qu’elle a accueillis (0 en cas d’aucun cours).
 
-SELECT s.nos, s.contenance, COUNT(c.nos) as nb_cours
-FROM Salle s
-LEFT JOIN Cours c ON s.nos = c.nos
-WHERE s.contenance >= 20
-GROUP BY s.nos, s.contenance
-ORDER BY s.nos;
-
-ROLLBACK;
-
 
 -- Exo 6
 -- Ajoutez 4 points à l’ensemble des notes obtenues, tout en limitant à 20 les notes dépassant cette barre après mise à jour. Pensez à rétablir la base de données dans son état initial à la fin de l’exercice.
-
-BEGIN;
-
--- Sauvegarde des notes
-CREATE TEMP TABLE temp_notes AS SELECT * FROM Evaluation;
-
--- Mise à jour des notes
-UPDATE Evaluation 
-SET note = CASE 
-    WHEN note + 4 > 20 THEN 20 
-    ELSE note + 4 
-END;
-
--- Pour restaurer
-UPDATE Evaluation SET note = temp_notes.note
-FROM temp_notes
-WHERE Evaluation.idm = temp_notes.idm 
-AND Evaluation.ide = temp_notes.ide;
-
-DROP TABLE temp_notes;
 
 ROLLBACK;

@@ -62,15 +62,6 @@ CREATE TABLE Evaluation (
     FOREIGN KEY (ide) REFERENCES Etudiant (ide)
 );
 
-CREATE TABLE Moyennes (
-    idm INTEGER,
-    groupe CHAR(2),
-    moyenne NUMERIC,
-    CONSTRAINT pk_moyennes PRIMARY KEY (idm, groupe),
-    FOREIGN KEY (idm) REFERENCES Matiere (idm),
-    CONSTRAINT groupe_check_moyennes CHECK (groupe IN ('G1', 'G2', 'G3'))
-);
-
 INSERT INTO Matiere VALUES (11, 'SQL', 7); 
 INSERT INTO Matiere VALUES (12, 'C++', 8);
 INSERT INTO Matiere VALUES (13, 'PHP', 7);

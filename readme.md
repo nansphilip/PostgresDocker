@@ -8,84 +8,95 @@ Create a Porstgres and Adminer containers
 
 ### Postgres container
 
+Pull and run the Postgres container:
+
 ```bash
-docker run --name my-postgres \ # name the container
-  -e POSTGRES_USER=root \ # set the user
-  -e POSTGRES_PASSWORD=root \ # set the password
-  -e POSTGRES_DB=postgres \ # set the database
-  -p 5432:5432 \ # map ports like : `host:container`
-  -d postgres # get docker image
+docker run --name my-postgres -e POSTGRES_USER=root -e POSTGRES_PASSWORD=root -e POSTGRES_DB=postgres -p 5432:5432 -d postgres
 ```
 
-Access the container and to Postgres
+Access to Postgres in the terminal by entering in the container:
 
 ```bash
 docker exec -it my-postgres psql -U root -d postgres
 ```
 
-Connexion information
-
-```text
-System: PostgreSQL
-Server: 
-  - localhost:5432 # from the host
-  - host.docker.internal:5432 # from another container
-Username: root
-Password: root
-Database: postgres
-```
+Connection information:
+  - System: PostgreSQL
+  - Server: 
+    - localhost:5432 (from the os directly)
+    - host.docker.internal:5432 (from another container)
+  - Username: root
+  - Password: root
+  - Database: postgres
 
 ### Adminer container
 
+Pull and run the Adminer container:
+
 ```bash
-docker run --name my-adminer \
-  -p 8085:8080 \
-  -d adminer
+docker run --name my-adminer -p 8085:8080 -d adminer
 ```
 
-Access the adminer in the browser
+Access the adminer in the browser:
 
 ```url
 http://localhost:8085/?pgsql=host.docker.internal%3A5432&username=root&db=postgres&ns=public
 ```
 
-<!-- ### PGAdmin container
+<!-- ### DBeaver container
+
+Pull and run the DBeaver container:
 
 ```bash
-docker run --name my-pgadmin \
-  -e PGADMIN_DEFAULT_EMAIL=root@example.com \
-  -e PGADMIN_DEFAULT_PASSWORD=root \
-  -p 8085:80 \
-  -d dpage/pgadmin4
+docker run --name my-dbeaver --rm -ti -p 8085:8978 -d dbeaver/cloudbeaver -v /opt/cloudbeaver/workspace
 ```
 
-Open pgAdmin in your browser
+Access the DBeaver in the browser:
 
-```bash
+```url
 http://localhost:8085
 ``` -->
 
-## Stop environment
+### PGAdmin container
 
-Stop the containers
+Pull and run the PGAdmin container:
 
 ```bash
-docker stop my-postgres my-adminer
+docker run --name my-pgadmin -e PGADMIN_DEFAULT_EMAIL=root@example.com -e PGADMIN_DEFAULT_PASSWORD=root -p 8085:80 -d dpage/pgadmin4
+```
+
+Access the PGAdmin in the browser:
+
+```url
+http://localhost:8085
+```
+
+## Stop environment
+
+Stop the containers:
+
+```bash
+docker stop my-postgres
+docker stop my-adminer
+docker stop my-pgadmin
 ```
 
 ## Start environment
 
-Start the containers
+Start the containers:
 
 ```bash
-docker start my-postgres my-adminer
+docker start my-postgres
+docker start my-adminer
+docker start my-pgadmin
 ```
 
 ## Clean environment
 
-Stop and remove the containers
+Remove the containers:
 
 ```bash
-docker stop my-postgres my-adminer
-docker rm my-postgres my-adminer
+docker rm my-postgres
+docker rm my-adminer
+docker rm my-pgadmin
 ```
